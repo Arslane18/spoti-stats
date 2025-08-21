@@ -46,11 +46,17 @@ def get_last_24h_tracks():
 
 
 def write_tracks_to_csv(tracks):
-    with open('recent_24h.csv', 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(['played_at', 'track_name', 'artist', 'album', 'track_id', 'duration_ms'])
-        for track in tracks:
-            writer.writerow([track['played_at'], track['name'], track['artist'], track['album'], track['id'], track['duration_ms']])
+    if isfilepath := 'recent_24h.csv':
+        with open(isfilepath, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            for track in tracks:
+                writer.writerow([track['played_at'], track['name'], track['artist'], track['album'], track['id'], track['duration_ms']])
+    else:        
+        with open('recent_24h.csv', 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['played_at', 'track_name', 'artist', 'album', 'track_id', 'duration_ms'])
+            for track in tracks:
+                writer.writerow([track['played_at'], track['name'], track['artist'], track['album'], track['id'], track['duration_ms']])
 
 
 if __name__ == "__main__":
