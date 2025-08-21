@@ -2,6 +2,7 @@ import spotipy
 import time
 import os
 import csv 
+import polars as pl
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
@@ -45,18 +46,37 @@ def get_last_24h_tracks():
     return tracks
 
 
-def write_tracks_to_csv(tracks):
-    if isfilepath := 'recent_24h.csv':
-        with open(isfilepath, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            for track in tracks:
-                writer.writerow([track['played_at'], track['name'], track['artist'], track['album'], track['id'], track['duration_ms']])
-    else:        
-        with open('recent_24h.csv', 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(['played_at', 'track_name', 'artist', 'album', 'track_id', 'duration_ms'])
-            for track in tracks:
-                writer.writerow([track['played_at'], track['name'], track['artist'], track['album'], track['id'], track['duration_ms']])
+def write_tracks_to_csv(tracks, filename="recent_24h.csv"):
+    file_exists = os.path.isfile(filename)
+
+    # Collect existing played_at values if file exists
+    existing_played = set()
+    if file_exists:
+        with open(filename, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                existing_played.add(row["played_at"])
+
+    # Open file in append mode if it exists, otherwise write mode
+    with open(filename, "a" if file_exists else "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+
+        # If new file, write header first
+        if not file_exists:
+            writer.writerow(["played_at", "track_name", "artist", "album", "track_id", "duration_ms"])
+
+        # Write only new rows
+        for track in tracks:
+            played_at_str = track["played_at"].strftime("%Y-%m-%d %H:%M:%S")
+            if played_at_str not in existing_played:
+                writer.writerow([
+                    played_at_str,
+                    track["name"],
+                    track["artist"],
+                    track["album"],
+                    track["id"],
+                    track["duration_ms"]
+                ])
 
 
 if __name__ == "__main__":
