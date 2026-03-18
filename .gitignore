@@ -1,5 +1,7 @@
 # cache files
 .cache
+__pycache__
+.vscode
 
 # environment variables
 .env
@@ -7,3 +9,4 @@
 # data
 *.csv
 *.db
+
